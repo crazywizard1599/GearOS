@@ -7,3 +7,6 @@ target = "x86_64-GearOS.json"
 
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"
+
+[warnings]
+non-snake-case = false
