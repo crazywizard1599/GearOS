@@ -111,10 +111,9 @@ impl fmt::Write for Writer {
         self.write_string(s);
         Ok(())
     }
-    
 }
-use spin::Mutex;
 use lazy_static::lazy_static;
+use spin::Mutex;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
@@ -138,5 +137,11 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    // Avoid deadlocks if `_print` is called from an exception/IRQ context while
+    // the VGA writer lock is already held.
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        if let Some(mut writer) = WRITER.try_lock() {
+            writer.write_fmt(args).ok();
+        }
+    });
 }

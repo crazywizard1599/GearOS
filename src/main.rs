@@ -1,30 +1,20 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_runner(GearOS::test_runner)]
+#![test_runner(gear_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
+#![allow(unused_imports)]
 
 use core::panic::PanicInfo;
-use GearOS::println;
+use gear_os::println;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
-
-    GearOS::init();
-
-    fn stack_overflow() {
-        stack_overflow(); // for each recursion, the return address is pushed
-    }
-
-    // trigger a stack overflow
-    stack_overflow();
+    gear_os::init();
 
     #[cfg(test)]
     test_main();
-
-    println!("It did not crash!");
-
+    
     loop {}
 }
 
@@ -39,5 +29,5 @@ fn panic(info: &PanicInfo) -> ! {
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    GearOS::test_panic_handler(info)
+    gear_os::test_panic_handler(info)
 }

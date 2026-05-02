@@ -1,19 +1,24 @@
 #![no_std]
 #![no_main]
-#![feature(custom_test_frameworks)]
-#![test_runner(GearOS::test_runner)]
-#![reexport_test_harness_main = "test_main"]
-
 
 use core::panic::PanicInfo;
-use GearOS::println;
+use gear_os::{QemuExitCode, exit_qemu, println, serial_print, serial_println};
 
-#[test_case]
-fn test_println() {
-    println!("test_println output");
+#[unsafe(no_mangle)]
+pub extern "C" fn _start() -> ! {
+    serial_print!("basic_boot::test_println...\t");
+    gear_os::init();
+    test_println();
+    serial_println!("[ok]");
+    exit_qemu(QemuExitCode::Success);
+    loop {}
 }
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    GearOS::test_panic_handler(info)
+    gear_os::test_panic_handler(info)
+}
+
+fn test_println() {
+    println!("test_println output");
 }

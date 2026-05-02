@@ -12,15 +12,21 @@ pub enum QemuExitCode {
     Failed = 0x11,
 }
 
-pub mod serial;
-pub mod vga_buffer;
 pub mod gdt;
 pub mod interrupts;
-
+pub mod serial;
+pub mod vga_buffer;
 
 pub fn init() {
     gdt::init();
     interrupts::init_idt();
+
+    unsafe {
+        interrupts::PICS.lock().initialize();
+        interrupts::init_pic_masks();
+    }
+
+    x86_64::instructions::interrupts::enable();
 }
 
 pub fn exit_qemu(exit_code: QemuExitCode) {
